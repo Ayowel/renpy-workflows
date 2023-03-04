@@ -49,8 +49,6 @@ Be warned when translation files were not updated in a pull request that require
 | TRANSLATION_LANGUAGES | Variable | Required | The languages supported by your game
 | RENPY_VERSION | Variable | Optional | The Ren'Py version used by your project
 | RENPY_DLC | Variable | Optional | The Ren'Py version used by your project
-| TRANSLATION_KO_LABEL | Variable | Optional | A label to add to pull requests where translations are not up to date
-| TRANSLATION_OK_LABEL | Variable | Optional | A label to add to pull requests where translations are up to date
 
 ```yml
 # .github/workflows/translations.yml
@@ -61,17 +59,12 @@ on:
 
 jobs:
   call_translation_check:
-    name: Basic translation check
-    uses: ayowel/renpy-workflows/.github/workflows/translation_check.yml@master
-    permissions:
-      pull-requests: write
-      contents: read
+    name: Call check
+    uses: ayowel/renpy-workflows/.github/workflows/translation_check.yml@testing
     with:
       renpy_version: ${{ vars.RENPY_VERSION }}
       renpy_dlcs: ${{ vars.RENPY_DLC }}
-      language: ${{ vars.TRANSLATION_LANGUAGES || 'None' }}
-      error_label: ${{ vars.TRANSLATION_KO_LABEL }}
-      success_label: ${{ vars.TRANSLATION_OK_LABEL }}
+      languages: ${{ vars.TRANSLATION_LANGUAGES }}
 ```
 
 ### Release the game to Itch.io

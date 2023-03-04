@@ -18,33 +18,18 @@ on:
         required: false
         default: ""
         type: string
-      language:
+      languages:
         description: "The supported languages"
         required: false
         default: "None"
         type: string
-      error_label:
-        description: "A label to add to the source PR if translations need update"
-        required: false
-        default: ""
-        type: string
-      success_label:
-        description: "A label to add to the source PR if translations are up to date"
-        required: false
-        default: ""
-        type: string
-      write_comment:
-        description: "Whether to write a comment on the PR that triggered the workflow"
-        required: false
-        default: true
-        type: boolean
 
 permissions:
   contents: read
-  pull-requests: write
 
 jobs:
   translation_check:
+    name: "Translation check"
     runs-on: ${{ inputs.runner }}
     steps:
       - uses: actions/checkout@v3
@@ -57,7 +42,7 @@ jobs:
           path: renpy
           key: ${{ runner.os }}-renpy-${{ inputs.renpy_version }}-
       - name: "Install Ren'Py"
-        uses: Ayowel/renpy-setup-action@v1
+        uses: Ayowel/renpy-setup-action@fix/translation-language-input_build
         if: steps.cache-renpy.outputs.cache-hit != 'true'
         with:
           action: install
@@ -65,78 +50,13 @@ jobs:
           dlc: ${{ inputs.renpy_dlcs }}
           install_dir: renpy
       - name: "Update translations"
-        uses: Ayowel/renpy-setup-action@v1
+        uses: Ayowel/renpy-setup-action@fix/translation-language-input_build
         with:
           action: translate
           install_dir: renpy
           game: project
-          language: ${{ inputs.language }}
+          languages: ${{ inputs.languages }}
       - name: "Look for translation changes"
-        # Conclusion is 'success' if there is no changes, 'failure' if there is some
-        id: changes-lookup
         run: |
           [[ -z "$(git status --porcelain)" ]]
-        continue-on-error: true
         working-directory: project
-      - name: Update PR labels
-        uses: actions/github-script@v6
-        env:
-          SUCCESS_LABEL: ${{ inputs.error_label }}
-          ERROR_LABEL: ${{ inputs.success_label }}
-          CONCLUSION: ${{ steps.changes-lookup.conclusion }}
-        with:
-          script: |
-            const added = [];
-            const removed = [];
-            const conclusion = process.env.CONCLUSION
-            console.log(`State: ${conclusion}`);
-            if (process.env.SUCCESS_LABEL) {
-              if (conclusion === 'success') {
-                added.push(process.env.SUCCESS_LABEL);
-              } else if (conclusion === 'failure') {
-                removed.push(process.env.SUCCESS_LABEL)
-              }
-            }
-            if (process.env.ERROR_LABEL) {
-              if (conclusion === 'failure') {
-                added.push(process.env.ERROR_LABEL);
-              } else if (conclusion === 'success') {
-                removed.push(process.env.ERROR_LABEL)
-              }
-            }
-
-            for (const label of removed) {
-              github.rest.issues.removeLabel({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                labels: [label]
-              });
-            }
-            for (const label of added) {
-              github.rest.issues.addLabels({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                labels: [label]
-              });
-            }
-            console.log(`Done`);
-      - name: Retrieve Comment
-        uses: peter-evans/find-comment@v2
-        id: fc
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-author: 'github-actions[bot]'
-          body-includes: Translation status
-
-      - name: Create or update comment
-        uses: peter-evans/create-or-update-comment@v2
-        with:
-          comment-id: ${{ steps.fc.outputs.comment-id }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            ### Translation status
-
-            *Up-to-date translation check:* `${{ steps.changes-lookup.conclusion }}`
-          edit-mode: replace
