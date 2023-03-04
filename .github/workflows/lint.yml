@@ -1,0 +1,49 @@
+name: Lint
+
+on:
+  workflow_call:
+    inputs:
+      runner:
+        description: "The runner to use"
+        required: false
+        default: 'ubuntu-latest'
+        type: string
+      renpy_version:
+        description: "The version of Ren'Py to use"
+        required: false
+        default: ""
+        type: string
+      renpy_dlcs:
+        description: "The Ren'Py DLCs to install"
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ${{ inputs.runner }}
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        path: project
+    - name: "Prepare Ren'Py cache"
+      id: cache-renpy
+      uses: actions/cache@v3
+      with:
+        path: renpy
+        key: ${{ runner.os }}-renpy-${{ inputs.renpy_version }}-
+    - uses: Ayowel/renpy-setup-action@v1
+      if: steps.cache-renpy.outputs.cache-hit != 'true'
+      with:
+        action: install
+        version: ${{ inputs.renpy_version }}
+        dlc: ${{ inputs.renpy_dlcs }}
+        install_dir: renpy
+    - uses: Ayowel/renpy-setup-action@v1
+      with:
+        action: lint
+        install_dir: renpy
+        game: project
