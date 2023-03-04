@@ -1,0 +1,78 @@
+name: Lint
+
+on:
+  workflow_call:
+    inputs:
+      runner:
+        description: "The runner to use"
+        required: false
+        default: 'ubuntu-latest'
+        type: string
+      renpy_version:
+        description: "The version of Ren'Py to use"
+        required: false
+        default: ""
+        type: string
+      game_version:
+        description: "The version of the game to release"
+        required: false
+        default: ""
+        type: string
+      renpy_dlcs:
+        description: "The Ren'Py DLCs to install"
+        required: false
+        default: ""
+        type: string
+      release_itch:
+        description: "Whether to release the game to Itch.io"
+        required: false
+        default: false
+        type: boolean
+    secrets:
+      itch_user:
+        description: "The slug of the Itch user that distributes the game"
+        required: false
+      itch_game:
+        description: "The slug of the Itch game to distribute"
+        required: false
+      itch_butler_key:
+        description: "The Butler key to use to upload the game"
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ${{ inputs.runner }}
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        path: project
+    - name: "Prepare Ren'Py cache"
+      id: cache-renpy
+      uses: actions/cache@v3
+      with:
+        path: renpy
+        key: ${{ runner.os }}-renpy-${{ inputs.renpy_version }}-
+    - uses: Ayowel/renpy-setup-action@v1
+      if: steps.cache-renpy.outputs.cache-hit != 'true'
+      with:
+        action: install
+        version: ${{ inputs.renpy_version }}
+        dlc: ${{ inputs.renpy_dlcs }}
+        install_dir: renpy
+    - uses: Ayowel/renpy-setup-action@v1
+      with:
+        action: distribute
+        install_dir: renpy
+        game: project
+        out_dir: target
+    - uses: Ayowel/butler-to-itch@v1.0.0
+      if: ${{ inputs.release_itch == true }}
+      with:
+        butler_key: ${{ secrets.itch_butler_key }}
+        itch_user: ${{ secrets.itch_user }}
+        itch_game: ${{ secrets.itch_game }}
+        version: ${{ inputs.game_version || github.ref_name }}
+        files: target/*
