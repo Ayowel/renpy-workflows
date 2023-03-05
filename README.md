@@ -17,7 +17,7 @@ Linting the project helps ensure that there are no issues with the project's cod
 | Name | Type | Requirement | Description |
 | :-- | :-- | :--: | :-- |
 | RENPY_VERSION | Variable | Optional | The Ren'Py version used by your project
-| RENPY_DLC | Variable | Optional | The Ren'Py version used by your project
+| RENPY_DLC | Variable | Optional | The Ren'Py DLCs used by your project
 
 ```yml
 # .github/workflows/lint.yml
@@ -48,7 +48,7 @@ Be warned when translation files were not updated in a pull request that require
 | :-- | :-- | :--: | :-- |
 | TRANSLATION_LANGUAGES | Variable | Required | The languages supported by your game
 | RENPY_VERSION | Variable | Optional | The Ren'Py version used by your project
-| RENPY_DLC | Variable | Optional | The Ren'Py version used by your project
+| RENPY_DLC | Variable | Optional | The Ren'Py DLCs used by your project
 
 ```yml
 # .github/workflows/translations.yml
@@ -60,7 +60,7 @@ on:
 jobs:
   call_translation_check:
     name: Call check
-    uses: ayowel/renpy-workflows/.github/workflows/translation_check.yml@testing
+    uses: ayowel/renpy-workflows/.github/workflows/translation_check.yml@master
     with:
       renpy_version: ${{ vars.RENPY_VERSION }}
       renpy_dlcs: ${{ vars.RENPY_DLC }}
@@ -77,7 +77,7 @@ Manually start a release in a few clicks by running a release workflow from your
 | ITCH_USER | Variable | Required | The name of the user that distributes the game (ex: `renpytom`)
 | ITCH_GAME | Variable | Required | The name of the game on Itch (ex: `the-question`)
 | RENPY_VERSION | Variable | Optional | The Ren'Py version used by your project
-| RENPY_DLC | Variable | Optional | The Ren'Py version used by your project
+| RENPY_DLC | Variable | Optional | The Ren'Py DLCs used by your project
 
 ```yml
 # .github/workflows/release.yml
