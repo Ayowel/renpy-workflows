@@ -42,7 +42,7 @@ jobs:
 
 ### Ensure the translation is up to date
 
-Be warned when translation files were not updated in a pull request that requires it.
+Be warned when updating the translation files adds new lines.
 
 | Name | Type | Requirement | Description |
 | :-- | :-- | :--: | :-- |
@@ -55,7 +55,12 @@ Be warned when translation files were not updated in a pull request that require
 name: Check translations
 
 on:
+  push:
+    branches:
+      - master
+      - main
   pull_request:
+  workflow_dispatch:
 
 jobs:
   call_translation_check:

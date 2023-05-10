@@ -42,7 +42,7 @@ jobs:
           path: renpy
           key: ${{ runner.os }}-renpy-${{ inputs.renpy_version }}-
       - name: "Install Ren'Py"
-        uses: Ayowel/renpy-setup-action@v1
+        uses: Ayowel/renpy-setup-action@v2
         if: steps.cache-renpy.outputs.cache-hit != 'true'
         with:
           action: install
@@ -50,7 +50,7 @@ jobs:
           dlc: ${{ inputs.renpy_dlcs }}
           install_dir: renpy
       - name: "Update translations"
-        uses: Ayowel/renpy-setup-action@v1
+        uses: Ayowel/renpy-setup-action@v2
         with:
           action: translate
           install_dir: renpy

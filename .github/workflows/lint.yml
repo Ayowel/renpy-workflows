@@ -35,14 +35,14 @@ jobs:
       with:
         path: renpy
         key: ${{ runner.os }}-renpy-${{ inputs.renpy_version }}-
-    - uses: Ayowel/renpy-setup-action@v1
+    - uses: Ayowel/renpy-setup-action@v2
       if: steps.cache-renpy.outputs.cache-hit != 'true'
       with:
         action: install
         version: ${{ inputs.renpy_version }}
         dlc: ${{ inputs.renpy_dlcs }}
         install_dir: renpy
-    - uses: Ayowel/renpy-setup-action@v1
+    - uses: Ayowel/renpy-setup-action@v2
       with:
         action: lint
         install_dir: renpy
